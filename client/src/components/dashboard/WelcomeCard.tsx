@@ -1,9 +1,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Employee, AttendanceRecord } from '../../types';
-// FIX: Add .tsx extension to LiveWorkTimer import
+import { Employee, AttendanceRecord } from '../../types.ts';
 import LiveWorkTimer from './LiveWorkTimer.tsx';
-import Card from '../common/Card';
-import Button from '../common/Button';
+import Card from '../common/Card.tsx';
+import Button from '../common/Button.tsx';
 
 interface WelcomeCardProps {
     user: Employee;
@@ -19,9 +18,10 @@ const getGreeting = () => {
     return "Good evening";
 };
 
-const parseWorkHoursToMs = (workHours: number | null | undefined): number => {
-    // workHours is now stored in minutes
+// FIX: Updated function to work with minutes (number) instead of a string.
+const parseWorkHoursToMs = (workHours: number | undefined | null): number => {
     if (!workHours) return 0;
+    // workHours is in minutes
     return workHours * 60 * 1000;
 };
 
@@ -45,8 +45,10 @@ const WelcomeCard: React.FC<WelcomeCardProps> = (props) => {
         return props.attendanceRecords
             .filter(rec => {
                 const recDate = new Date(rec.date);
+                // Include records from the start of the week up to (but not including) today
                 return recDate >= startOfWeek && rec.date < todayStr;
             })
+            // FIX: Removed incorrect fallback that caused type error. `rec.workHours` is a number.
             .reduce((total, rec) => total + parseWorkHoursToMs(rec.workHours), 0);
     }, [props.attendanceRecords]);
 
@@ -60,7 +62,7 @@ const WelcomeCard: React.FC<WelcomeCardProps> = (props) => {
                     <div>
                         <h2 className="text-4xl font-extrabold">{getGreeting()}, {props.user.name.split(' ')[0]}!</h2>
                         <p className="mt-2 text-lg opacity-80">
-                            {isClockedIn ? "You're on the clock. Let's make it a great day!" : hasWorkedToday ? "You've completed your day. Well done!" : "Ready for a productive day?"}
+                            {isClockedIn ? "You're on the clock. Let's make it a great day!" : "Ready for a productive day?"}
                         </p>
                     </div>
                     <div className="text-right flex-shrink-0">

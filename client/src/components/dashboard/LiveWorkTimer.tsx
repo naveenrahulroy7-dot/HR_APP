@@ -1,7 +1,9 @@
+
+
 import React, { useState, useEffect } from 'react';
-import Icon from '../common/Icon';
-import Button from '../common/Button';
-import { AttendanceRecord } from '../../types';
+import Icon from '../common/Icon.tsx';
+import Button from '../common/Button.tsx';
+import { AttendanceRecord } from '../../types.ts';
 
 interface LiveWorkTimerProps {
   record: AttendanceRecord;
@@ -17,6 +19,17 @@ const formatMillisecondsToHHMMSS = (ms: number) => {
     const seconds = totalSeconds % 60;
     return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
 };
+
+// FIX: This helper is no longer needed as backend sends full ISO strings.
+/*
+const parseTimeToDate = (timeString: string, dateString: string): Date => {
+    const [time, modifier] = timeString.split(' ');
+    let [hours, minutes] = time.split(':').map(Number);
+    if (modifier === 'PM' && hours < 12) hours += 12;
+    if (modifier === 'AM' && hours === 12) hours = 0;
+    return new Date(`${dateString}T${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`);
+};
+*/
 
 const WEEKLY_GOAL_MS = 40 * 60 * 60 * 1000; // 40 hours in milliseconds
 
@@ -51,7 +64,7 @@ const LiveWorkTimer: React.FC<LiveWorkTimerProps> = ({ record, onClockAction, we
     }
 
     return () => clearInterval(timerId);
-  }, [record.clockIn, record.clockOut, weeklyAccumulatedMs, isClockedOut]);
+  }, [record.clockIn, record.clockOut, weeklyAccumulatedMs, record.date, isClockedOut]);
 
   return (
     <div className="p-6">

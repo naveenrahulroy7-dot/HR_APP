@@ -1,3 +1,5 @@
+
+
 import React, { useState, useMemo, useEffect } from 'react';
 import { AttendanceRecord, AttendanceStatus, Employee, UserRole, Department } from '../../types.ts';
 import Card from '../common/Card.tsx';
@@ -23,19 +25,34 @@ const StatusBadge: React.FC<{ status: AttendanceStatus }> = ({ status }) => {
   );
 };
 
-// FIX: Helper to format minutes into a readable string
-const formatWorkHours = (minutes: number | null | undefined): string => {
-    if (minutes === null || minutes === undefined) return '--:--';
-    const h = Math.floor(minutes / 60);
-    const m = minutes % 60;
-    return `${h}h ${m}m`;
-};
-
-// FIX: Helper to format ISO date string to time
+// Helper to format ISO date string to time
 const formatTime = (dateString: string | null | undefined): string => {
     if (!dateString) return '--:--';
-    return new Date(dateString).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-}
+    return new Date(dateString).toLocaleTimeString('en-US', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true,
+    });
+};
+
+// Helper to format minutes into a readable string
+const formatWorkHours = (minutes: number | null | undefined): string => {
+    if (minutes === null || minutes === undefined || minutes < 0) return '--:--';
+    if (minutes === 0) return '0m';
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    
+    const parts = [];
+    if (hours > 0) {
+        parts.push(`${hours}h`);
+    }
+    if (mins > 0) {
+        parts.push(`${mins}m`);
+    }
+    
+    return parts.join(' ');
+};
+
 
 interface AttendancePageProps {
   user: Employee;
@@ -124,18 +141,12 @@ const AttendancePage: React.FC<AttendancePageProps> = ({ user, records, setRecor
         setRecords(prev => prev.map(r => r.id === existingRecord.id ? {...r, status: newStatus} : r));
     } else {
         const tempRecord = { id: `new-${Date.now()}`, employeeId, date: selectedDate, status: newStatus };
-        setRecords(prev => [...prev, tempRecord as AttendanceRecord]);
+        setRecords(prev => [...prev, tempRecord]);
     }
     
     try {
         const { data: updatedRecord } = await api.updateAttendanceStatus({ employeeId, date: selectedDate, status: newStatus });
-        setRecords(prev => {
-            const existing = prev.find(r => (r.employeeId === employeeId && r.date === selectedDate));
-            if (existing) {
-                return prev.map(r => (r.id === existing.id || r.id.startsWith('temp-')) ? updatedRecord : r)
-            }
-            return [...prev.filter(r => !r.id.startsWith('new-')), updatedRecord];
-        });
+        setRecords(prev => prev.map(r => (r.employeeId === employeeId && r.date === selectedDate) ? updatedRecord : r));
     } catch(err) {
         handleApiError(err, addToast, { context: 'Update Attendance Status' });
         setRecords(originalRecords); // Revert on error
@@ -228,7 +239,7 @@ const AttendancePage: React.FC<AttendancePageProps> = ({ user, records, setRecor
                                     <TableCell>
                                         {canEdit ? (
                                             <Select value={record.status} onChange={(e) => handleStatusChange(employee.id, e.target.value as AttendanceStatus)} className="h-9 text-xs">
-                                               {Object.values(AttendanceStatus).map((s: AttendanceStatus) => <option key={s} value={s}>{s}</option>)}
+                                               {Object.values(AttendanceStatus).map(s => <option key={s} value={s}>{s}</option>)}
                                             </Select>
                                         ) : (
                                             <StatusBadge status={record.status} />

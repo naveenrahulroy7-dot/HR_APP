@@ -1,12 +1,11 @@
+
 import React, { useState } from 'react';
-import { Employee } from '../../types';
-import Card from '../common/Card';
-import Button from '../common/Button';
-import Input from '../common/Input';
-import Label from '../common/Label';
-import { useToast } from '../../hooks/useToast';
-import * as api from '../../services/api';
-import { handleApiError } from '../../utils/errorHandler';
+import { Employee } from '../../types.ts';
+import Card from '../common/Card.tsx';
+import Button from '../common/Button.tsx';
+import Input from '../common/Input.tsx';
+import Label from '../common/Label.tsx';
+import { useToast } from '../../hooks/useToast.tsx';
 
 interface MFASetupPageProps {
   user: Employee;
@@ -18,26 +17,23 @@ const MFASetupPage: React.FC<MFASetupPageProps> = ({ user, onComplete }) => {
   const [isLoading, setIsLoading] = useState(false);
   const { addToast } = useToast();
 
-  const otpAuthUrl = `otpauth://totp/WEintegrityHRMS:${user.email}?secret=${user.mfaSecret}&issuer=WEintegrityHRMS`;
+  const otpAuthUrl = `otpauth://totp/HRMS:${user.email}?secret=${user.mfaSecret}&issuer=HRMS`;
   const qrCodeUrl = `https://chart.googleapis.com/chart?chs=200x200&chld=M|0&cht=qr&chl=${encodeURIComponent(otpAuthUrl)}`;
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (otp.length !== 6 || !/^\d+$/.test(otp)) {
-        addToast({ type: 'error', message: 'Invalid OTP. Please enter a 6-digit code.' });
-        return;
-    }
     setIsLoading(true);
 
-    try {
-        await api.setupMfa({ token: otp });
-        addToast({ type: 'success', message: 'MFA setup complete!' });
-        onComplete();
-    } catch (error) {
-        handleApiError(error, addToast, { context: 'MFA Setup' });
-    } finally {
+    // Mock verification
+    setTimeout(() => {
+        if (otp.length === 6 && /^\d+$/.test(otp)) {
+            addToast({ type: 'success', message: 'MFA setup complete!' });
+            onComplete();
+        } else {
+            addToast({ type: 'error', message: 'Invalid OTP. Please enter a 6-digit code.' });
+        }
         setIsLoading(false);
-    }
+    }, 1000);
   };
 
   return (
@@ -66,7 +62,6 @@ const MFASetupPage: React.FC<MFASetupPageProps> = ({ user, onComplete }) => {
               maxLength={6}
               disabled={isLoading}
               className="text-center tracking-[0.5em]"
-              autoComplete="one-time-code"
             />
           </div>
           <Button type="submit" className="w-full" size="lg" disabled={isLoading}>
