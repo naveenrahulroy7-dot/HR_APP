@@ -1,9 +1,10 @@
+
 import React from 'react';
-import LeaveApplyForm from '../leave/LeaveApplyForm';
-import LeaveHistoryTable from '../leave/LeaveHistoryTable';
-import LeaveBalanceCard from '../leave/LeaveBalanceCard';
-import HolidayList from '../leave/HolidayList';
-import { LeaveRequest, LeaveBalanceItem, Holiday, Employee } from '../../types';
+import LeaveApplyForm from '../leave/LeaveApplyForm.tsx';
+import LeaveHistoryTable from '../leave/LeaveHistoryTable.tsx';
+import LeaveBalanceCard from '../leave/LeaveBalanceCard.tsx';
+import HolidayList from '../leave/HolidayList.tsx';
+import { LeaveRequest, LeaveBalanceItem, Holiday, Employee } from '../../types.ts';
 
 interface LeavePageProps {
     user: Employee;

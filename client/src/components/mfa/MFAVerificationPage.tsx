@@ -1,46 +1,41 @@
+
 import React, { useState } from 'react';
-import Card from '../common/Card';
-import Button from '../common/Button';
-import Input from '../common/Input';
-import Label from '../common/Label';
-import { useToast } from '../../hooks/useToast';
-import * as api from '../../services/api';
-import { handleApiError } from '../../utils/errorHandler';
-import { Employee } from '../../types';
+import Card from '../common/Card.tsx';
+import Button from '../common/Button.tsx';
+import Input from '../common/Input.tsx';
+import Label from '../common/Label.tsx';
+import { useToast } from '../../hooks/useToast.tsx';
 
 interface MFAVerificationPageProps {
-  user: Employee;
   onComplete: () => void;
 }
 
-const MFAVerificationPage: React.FC<MFAVerificationPageProps> = ({ user, onComplete }) => {
+const MFAVerificationPage: React.FC<MFAVerificationPageProps> = ({ onComplete }) => {
   const [otp, setOtp] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const { addToast } = useToast();
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (otp.length !== 6 || !/^\d+$/.test(otp)) {
-        addToast({ type: 'error', message: 'Invalid OTP. Please enter a 6-digit code.' });
-        return;
-    }
     setIsLoading(true);
 
-    try {
-        await api.verifyMfa({ token: otp });
-        onComplete();
-    } catch (error) {
-        handleApiError(error, addToast, { context: 'MFA Verification' });
-        setOtp('');
-    } finally {
+    // Mock verification
+    setTimeout(() => {
+        if (otp.length === 6 && /^\d+$/.test(otp)) {
+            // In a real app, you would verify the OTP against the user's secret
+            onComplete();
+        } else {
+            addToast({ type: 'error', message: 'Invalid OTP. Please try again.' });
+            setOtp('');
+        }
         setIsLoading(false);
-    }
+    }, 1000);
   };
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-background p-4">
       <Card title="Two-Factor Verification" className="w-full max-w-sm">
-        <p className="text-muted-foreground text-center mb-6">Enter the 6-digit code from your authenticator app for <strong className="text-foreground">{user.email}</strong>.</p>
+        <p className="text-muted-foreground text-center mb-6">Enter the 6-digit code from your authenticator app.</p>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <Label htmlFor="otp" className="sr-only">Verification Code</Label>

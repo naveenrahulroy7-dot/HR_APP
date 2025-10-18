@@ -6,7 +6,6 @@ import DepartmentDistribution from '../dashboard/DepartmentDistribution.tsx';
 import Icon, { IconName } from '../common/Icon.tsx';
 import AttendanceCalendar from '../dashboard/AttendanceCalendar.tsx';
 import EmployeeStats from '../dashboard/EmployeeStats.tsx';
-// FIX: Add .tsx extension to WelcomeCard import
 import WelcomeCard from '../dashboard/WelcomeCard.tsx';
 
 interface DashboardPageProps {
