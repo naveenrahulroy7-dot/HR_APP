@@ -1,25 +1,25 @@
 import React, { useState, useCallback, useEffect, useMemo } from 'react';
-import Sidebar from './components/layout/Sidebar';
-import Topbar from './components/layout/Topbar';
-import LoginPage from './components/LoginPage';
-import { Employee, Notification, Department, AttendanceRecord, LeaveRequest, PayrollRecord, LeaveBalance, LeaveStatus, UserRole, Holiday, LeaveType } from './types';
-import { ToastProvider, useToast } from './hooks/useToast';
+import Sidebar from '../../components/layout/Sidebar.tsx';
+import Topbar from '../../components/layout/Topbar.tsx';
+import LoginPage from '../../components/LoginPage.tsx';
+import { Employee, Notification, Department, AttendanceRecord, LeaveRequest, PayrollRecord, LeaveBalance, LeaveStatus, UserRole, Holiday, LeaveType } from '../../types.ts';
+import { ToastProvider, useToast } from '../../hooks/useToast.tsx';
 import * as api from './services/api';
-import { handleApiError } from './utils/errorHandler';
+import { handleApiError } from '../../utils/errorHandler.ts';
 
 // Page Components
-import DashboardPage from './components/pages/DashboardPage';
-import EmployeesPage from './components/pages/EmployeesPage';
-import DepartmentsPage from './components/pages/DepartmentsPage';
-import AttendancePage from './components/pages/AttendancePage';
-import LeavePage from './components/pages/LeavePage';
-import LeaveManagementPage from './components/pages/LeaveManagementPage';
-import PayrollPage from './components/pages/PayrollPage';
-import ReportsPage from './components/pages/ReportsPage';
-import ProfilePage from './components/pages/ProfilePage';
-import MFASetupPage from './components/mfa/MFASetupPage';
-import MFAVerificationPage from './components/mfa/MFAVerificationPage';
-import Icon from './components/common/Icon';
+import DashboardPage from '../../components/pages/DashboardPage.tsx';
+import EmployeesPage from '../../components/pages/EmployeesPage.tsx';
+import DepartmentsPage from '../../components/pages/DepartmentsPage.tsx';
+import AttendancePage from '../../components/pages/AttendancePage.tsx';
+import LeavePage from '../../components/pages/LeavePage.tsx';
+import LeaveManagementPage from '../../components/pages/LeaveManagementPage.tsx';
+import PayrollPage from '../../components/pages/PayrollPage.tsx';
+import ReportsPage from '../../components/pages/ReportsPage.tsx';
+import ProfilePage from '../../components/pages/ProfilePage.tsx';
+import MFASetupPage from '../../components/mfa/MFASetupPage.tsx';
+import MFAVerificationPage from '../../components/mfa/MFAVerificationPage.tsx';
+import Icon from '../../components/common/Icon.tsx';
 
 // More granular auth states for mandatory MFA flow
 type AuthState = 'loading' | 'loggedOut' | 'needsMfaSetup' | 'needsMfaVerification' | 'authenticated';

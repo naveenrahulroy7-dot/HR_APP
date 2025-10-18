@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { Employee, LeaveRequest, PayrollRecord, Department, AttendanceRecord, LeaveBalance, Holiday, Notification, LeaveStatus } from '../types';
+import { Employee, LeaveRequest, PayrollRecord, Department, AttendanceRecord, LeaveBalance, Holiday, Notification, LeaveStatus } from '../../types.ts';
 
 const api = axios.create({
     baseURL: '/api',
