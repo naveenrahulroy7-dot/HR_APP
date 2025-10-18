@@ -1,1 +1,158 @@
-~éer‰íz{l¡û®÷«þšâ²f¿±È^™®+&h
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  Admin
+  HR
+  Manager
+  Employee
+}
+
+enum EmployeeStatus {
+  Active
+  Inactive
+}
+
+enum EmployeeType {
+  Permanent
+  Contract
+  Intern
+}
+
+enum AttendanceStatus {
+  Present
+  Absent
+  Leave
+  HalfDay // maps to "Half-Day" in UI
+  NotMarked // maps to "Not Marked" in UI
+}
+
+enum LeaveType {
+  Annual
+  Sick
+  Casual
+  Unpaid
+}
+
+enum LeaveStatus {
+  Pending
+  Approved
+  Rejected
+}
+
+enum PayrollStatus {
+  Paid
+  Generated
+  Pending
+}
+
+model Employee {
+  id           String          @id @default(cuid())
+  name         String
+  email        String          @unique
+  role         UserRole        @default(Employee)
+  avatarUrl    String
+  isMfaSetup   Boolean         @default(false)
+  mfaSecret    String
+  passwordHash String
+
+  employeeId   String          @unique
+  phone        String?
+  joinDate     DateTime?
+  status       EmployeeStatus  @default(Active)
+  employeeType EmployeeType    @default(Permanent)
+  salary       Float           @default(0)
+
+  department   Department?     @relation(fields: [departmentId], references: [id])
+  departmentId String?
+
+  attendanceRecords AttendanceRecord[]
+  leaveBalances     LeaveBalance[]
+  leaveRequests     LeaveRequest[]
+  payrollRecords    PayrollRecord[]
+  notifications     Notification[]
+  managedDepartments Department[] @relation("DepartmentManager")
+}
+
+model Department {
+  id        String     @id @default(cuid())
+  name      String     @unique
+  manager   Employee?  @relation("DepartmentManager", fields: [managerId], references: [id])
+  managerId String?
+  employees Employee[]
+}
+
+model AttendanceRecord {
+  id         String            @id @default(cuid())
+  employee   Employee          @relation(fields: [employeeId], references: [id])
+  employeeId String
+  date       DateTime
+  status     AttendanceStatus
+  clockIn    DateTime?
+  clockOut   DateTime?
+  workHours  Int?
+
+  @@unique([employeeId, date], name: "employeeId_date")
+}
+
+model LeaveBalance {
+  id         String     @id @default(cuid())
+  employee   Employee   @relation(fields: [employeeId], references: [id])
+  employeeId String
+  type       LeaveType
+  total      Int        @default(0)
+  used       Int        @default(0)
+  pending    Int        @default(0)
+
+  @@unique([employeeId, type])
+}
+
+model LeaveRequest {
+  id           String       @id @default(cuid())
+  employee     Employee     @relation(fields: [employeeId], references: [id])
+  employeeId   String
+  employeeName String
+  leaveType    LeaveType
+  startDate    DateTime
+  endDate      DateTime
+  reason       String
+  status       LeaveStatus  @default(Pending)
+  days         Int
+}
+
+model PayrollRecord {
+  id         String        @id @default(cuid())
+  employee   Employee      @relation(fields: [employeeId], references: [id])
+  employeeId String
+  month      Int
+  year       Int
+  basic      Float
+  allowances Json
+  deductions Json
+  grossPay   Float
+  netPay     Float
+  status     PayrollStatus @default(Generated)
+}
+
+model Notification {
+  id          String   @id @default(cuid())
+  title       String
+  message     String
+  timestamp   DateTime @default(now())
+  read        Boolean  @default(false)
+  link        String?
+  employee    Employee? @relation(fields: [employeeId], references: [id])
+  employeeId  String?
+}
+
+model Holiday {
+  id    String   @id @default(cuid())
+  date  DateTime
+  name  String
+}

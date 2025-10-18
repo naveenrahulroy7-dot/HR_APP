@@ -41,6 +41,17 @@ app.get('/api', (req: Request, res: Response) => {
     res.json({ message: 'HRMS API is running...' });
 });
 
+// Serve client build in production
+if (process.env.NODE_ENV === 'production') {
+    // When built, this file resides in server/dist/index.js
+    // The client build is expected at client/dist relative to repo root
+    const clientDist = path.join(__dirname, '../../client/dist');
+    app.use(express.static(clientDist));
+    app.get('*', (_req: Request, res: Response) => {
+        res.sendFile(path.join(clientDist, 'index.html'));
+    });
+}
+
 const PORT = process.env.PORT || 3001;
 
 app.listen(PORT, () => console.log(`🚀 Server running on http://localhost:${PORT}`));

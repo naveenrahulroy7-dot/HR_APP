@@ -1,0 +1,31 @@
+version: "3.9"
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: hrms
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+  app:
+    build:
+      context: .
+      dockerfile: server/Dockerfile
+    depends_on:
+      - db
+    environment:
+      NODE_ENV: production
+      PORT: 3001
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/hrms?schema=public
+      JWT_SECRET: supersecretjwt
+    ports:
+      - "3001:3001"
+    volumes:
+      - app-uploads:/app/server/uploads
+volumes:
+  pgdata:
+  app-uploads:
