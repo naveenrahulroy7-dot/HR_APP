@@ -3,7 +3,7 @@
 import { Buffer } from 'buffer';
 
 import { Request, Response } from 'express';
-import asyncHandler from 'express-async-handler';
+import asyncHandler from '../utils/asyncHandler.js';
 import prisma from '../db.js';
 import bcrypt from 'bcryptjs';
 import speakeasy from 'speakeasy';

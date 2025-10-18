@@ -1,28 +1,39 @@
 import { Request, Response } from 'express';
-import asyncHandler from 'express-async-handler';
+import asyncHandler from '../utils/asyncHandler.js';
 import prisma from '../db.js';
 
-// @desc    Get all notifications for a user
+// @desc    Get my notifications
 // @route   GET /api/notifications
 // @access  Private
-export const getNotifications = asyncHandler(async (req: any, res: Response) => {
-    // This is a simplified version. A real app might have a more complex notification system.
+export const getMyNotifications = asyncHandler(async (req: any, res: Response) => {
     const notifications = await prisma.notification.findMany({
-        // where: { employeeId: req.user.id }, // Or notifications could be global
-        orderBy: {
-            timestamp: 'desc',
-        },
-        take: 20,
+        where: { employeeId: req.user.id },
+        orderBy: { createdAt: 'desc' },
     });
     res.json(notifications);
 });
 
-// @desc    Mark notifications as read
-// @route   POST /api/notifications/read
+// @desc    Mark notification as read
+// @route   PUT /api/notifications/:id/read
 // @access  Private
 export const markAsRead = asyncHandler(async (req: any, res: Response) => {
-    // In a real app, you might pass IDs to mark specific ones as read.
-    // This is a simplified "mark all" endpoint.
-    // For now, this logic will live on the client-side as it doesn't persist.
-    res.json({ message: 'Notifications marked as read (client-side simulation).' });
+    const notification = await prisma.notification.update({
+        where: { id: req.params.id },
+        data: { isRead: true }
+    });
+    res.json(notification);
+});
+
+// @desc    Mark all notifications as read
+// @route   PUT /api/notifications/read-all
+// @access  Private
+export const markAllAsRead = asyncHandler(async (req: any, res: Response) => {
+    await prisma.notification.updateMany({
+        where: { 
+            employeeId: req.user.id,
+            isRead: false 
+        },
+        data: { isRead: true }
+    });
+    res.json({ message: 'All notifications marked as read' });
 });

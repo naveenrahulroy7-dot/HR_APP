@@ -1,5 +1,5 @@
 import jwt from 'jsonwebtoken';
-import asyncHandler from 'express-async-handler';
+import asyncHandler from '../utils/asyncHandler.js';
 import prisma from '../db.js';
 import { Request, Response, NextFunction } from 'express';
 

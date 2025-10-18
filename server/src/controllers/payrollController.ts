@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import asyncHandler from 'express-async-handler';
+import asyncHandler from '../utils/asyncHandler.js';
 import prisma from '../db.js';
 import { AttendanceStatus, EmployeeStatus, PayrollStatus } from '@prisma/client';
 
@@ -45,15 +45,16 @@ export const generatePayroll = asyncHandler(async (req: Request, res: Response) 
     const newPayrollRecords = [];
 
     for (const emp of employeesToProcess) {
-        const grossPay = emp.salary / 12;
-        const basic = grossPay * 0.5;
-        const hra = basic * 0.4;
-        const special = grossPay - basic - hra;
+        if (!emp.salary) continue;
+        
+        const annualSalary = emp.salary;
+        const basicSalary = annualSalary / 12;
+        const allowances = basicSalary * 0.2; // 20% allowances
 
-        const startDate = new Date(year, month, 1);
-        const endDate = new Date(year, month + 1, 0);
+        const startDate = new Date(year, month - 1, 1);
+        const endDate = new Date(year, month, 0);
 
-        const absentDays = await prisma.attendanceRecord.count({
+        const absentDays = await prisma.attendance.count({
             where: {
                 employeeId: emp.id,
                 date: { gte: startDate, lte: endDate },
@@ -62,24 +63,23 @@ export const generatePayroll = asyncHandler(async (req: Request, res: Response) 
         });
 
         // Assuming 22 working days in a month for deduction calculation
-        const absenceDeduction = absentDays * (grossPay / 22);
-        const providentFund = basic * 0.12;
-        const tax = grossPay > 5000 ? (grossPay - 5000) * 0.1 : 0; // Simple tax calc
+        const absenceDeduction = absentDays * (basicSalary / 22);
+        const providentFund = basicSalary * 0.12;
+        const tax = basicSalary > 50000 ? (basicSalary - 50000) * 0.1 : 0;
         
         const totalDeductions = absenceDeduction + providentFund + tax;
-        const netPay = grossPay - totalDeductions;
+        const netSalary = basicSalary + allowances - totalDeductions;
 
         const record = await prisma.payrollRecord.create({
             data: {
                 employeeId: emp.id,
                 month,
                 year,
-                basic: parseFloat(basic.toFixed(2)),
-                allowances: { hra: parseFloat(hra.toFixed(2)), special: parseFloat(special.toFixed(2)) },
-                deductions: { tax: parseFloat(tax.toFixed(2)), providentFund: parseFloat(providentFund.toFixed(2)), absence: parseFloat(absenceDeduction.toFixed(2)) },
-                grossPay: parseFloat(grossPay.toFixed(2)),
-                netPay: parseFloat(netPay.toFixed(2)),
-                status: PayrollStatus.Generated,
+                basicSalary: parseFloat(basicSalary.toFixed(2)),
+                allowances: parseFloat(allowances.toFixed(2)),
+                deductions: parseFloat(totalDeductions.toFixed(2)),
+                netSalary: parseFloat(netSalary.toFixed(2)),
+                status: PayrollStatus.Pending,
             }
         });
         newPayrollRecords.push(record);
