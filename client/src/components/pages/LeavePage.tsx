@@ -8,7 +8,7 @@ import { LeaveRequest, LeaveBalanceItem, Holiday, Employee } from '../../types';
 interface LeavePageProps {
     user: Employee;
     leaveRequests: LeaveRequest[];
-    onApplyLeave: (newRequest: Omit<LeaveRequest, 'id' | 'status' | 'days' | 'employeeId' | 'employeeName'>) => void;
+    onApplyLeave: (_newRequest: Omit<LeaveRequest, 'id' | 'status' | 'days' | 'employeeId' | 'employeeName'>) => void;
     leaveBalances: LeaveBalanceItem[];
     holidays: Holiday[];
 }

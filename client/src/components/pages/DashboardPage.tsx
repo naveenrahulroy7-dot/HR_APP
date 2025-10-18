@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Card from '../common/Card.tsx';
-import { EmployeeStatus, LeaveStatus, AttendanceStatus, Employee, AttendanceRecord, Department, LeaveRequest, LeaveBalanceItem, Notification } from '../../types.ts';
+import { EmployeeStatus, LeaveStatus, AttendanceStatus, Employee, AttendanceRecord, Department, LeaveRequest, LeaveBalanceItem, AppNotification } from '../../types.ts';
 import ActivityFeed from '../dashboard/ActivityFeed.tsx';
 import DepartmentDistribution from '../dashboard/DepartmentDistribution.tsx';
 import Icon, { IconName } from '../common/Icon.tsx';
@@ -16,9 +16,9 @@ interface DashboardPageProps {
   attendanceRecords: AttendanceRecord[];
   leaveRequests: LeaveRequest[];
   todayAttendanceRecord: AttendanceRecord | null;
-  onClockAction: (action: 'in' | 'out') => void;
+  onClockAction: (_action: 'in' | 'out') => void;
   leaveBalances: LeaveBalanceItem[];
-  recentNotifications: Notification[];
+  recentNotifications: AppNotification[];
 }
 
 const AnimatedNumber = ({ value }: { value: number }) => {

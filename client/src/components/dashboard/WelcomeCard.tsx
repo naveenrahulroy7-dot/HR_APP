@@ -8,7 +8,7 @@ import Button from '../common/Button';
 interface WelcomeCardProps {
     user: Employee;
     todayAttendanceRecord: AttendanceRecord | null;
-    onClockAction: (action: 'in' | 'out') => void;
+    onClockAction: (_action: 'in' | 'out') => void;
     attendanceRecords: AttendanceRecord[];
 }
 
