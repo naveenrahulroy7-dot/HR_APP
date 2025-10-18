@@ -10,9 +10,17 @@
     "isolatedModules": true,
     "noEmit": true,
     "jsx": "react-jsx",
-    "types": ["vite/client"],
+    "types": ["vite/client", "react", "react-dom"],
     "allowImportingTsExtensions": true
   },
-  "include": ["src", "../components", "../types.ts"],
+  "include": [
+    "src/main.tsx",
+    "src/App.tsx",
+    "src/index.css",
+    "src/services/**/*",
+    "src/hooks/**/*",
+    "src/utils/**/*",
+    "src/types.ts"
+  ],
   "references": [{ "path": "./tsconfig.node.json" }]
 }
