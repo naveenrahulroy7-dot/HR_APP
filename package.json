@@ -2,13 +2,33 @@
   "name": "hrms-fullstack-monorepo",
   "version": "1.0.0",
   "private": true,
-  "description": "Root for the HRMS full-stack application",
+  "description": "Full-stack HRMS application with React + Vite frontend and Express + Prisma backend",
   "scripts": {
-    "install": "npm install --prefix client && npm install --prefix server",
+    "install:all": "npm install --prefix client && npm install --prefix server",
     "dev": "npm run dev --prefix server & npm run dev --prefix client",
-    "build": "npm run build --prefix client",
-    "start": "npm start --prefix server"
+    "dev:server": "npm run dev --prefix server",
+    "dev:client": "npm run dev --prefix client",
+    "build": "npm run build --prefix server && npm run build --prefix client",
+    "build:server": "npm run build --prefix server",
+    "build:client": "npm run build --prefix client",
+    "start": "npm start --prefix server",
+    "db:setup": "cd server && npm run prisma:generate && npm run db:push && npm run db:seed",
+    "db:reset": "cd server && prisma migrate reset --force",
+    "db:studio": "cd server && npm run prisma:studio",
+    "postinstall": "npm run install:all"
   },
+  "keywords": [
+    "hrms",
+    "human-resources",
+    "employee-management",
+    "attendance",
+    "payroll",
+    "leave-management"
+  ],
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  }
 }

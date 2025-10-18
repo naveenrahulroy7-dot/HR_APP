@@ -1,1 +1,219 @@
-~éer‰íz{l¡û®÷«þšâ²f¿±È^™®+&h
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  Admin
+  HR
+  Manager
+  Employee
+}
+
+enum EmployeeStatus {
+  Active
+  OnLeave
+  Inactive
+  Terminated
+}
+
+enum EmployeeType {
+  FullTime
+  PartTime
+  Contract
+  Intern
+}
+
+enum LeaveStatus {
+  Pending
+  Approved
+  Rejected
+  Cancelled
+}
+
+enum LeaveType {
+  Annual
+  Sick
+  Casual
+  Unpaid
+  Maternity
+  Paternity
+}
+
+enum AttendanceStatus {
+  Present
+  Absent
+  Late
+  HalfDay
+  OnLeave
+  Holiday
+  Weekend
+}
+
+enum PayrollStatus {
+  Pending
+  Paid
+  Failed
+}
+
+model Employee {
+  id            String         @id @default(uuid())
+  employeeId    String         @unique
+  name          String
+  email         String         @unique
+  phone         String?
+  passwordHash  String
+  mfaSecret     String
+  isMfaSetup    Boolean        @default(false)
+  role          UserRole       @default(Employee)
+  avatarUrl     String?
+  departmentId  String?
+  department    Department?    @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+  joinDate      DateTime       @default(now())
+  status        EmployeeStatus @default(Active)
+  employeeType  EmployeeType   @default(FullTime)
+  salary        Float?
+  
+  // Relations
+  attendance    Attendance[]
+  leaveRequests LeaveRequest[]
+  leaveBalances LeaveBalance[]
+  payrollRecords PayrollRecord[]
+  notifications Notification[]
+  
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  @@index([email])
+  @@index([departmentId])
+  @@index([status])
+}
+
+model Department {
+  id          String     @id @default(uuid())
+  name        String     @unique
+  description String?
+  headId      String?
+  employees   Employee[]
+  
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@index([name])
+}
+
+model Attendance {
+  id         String           @id @default(uuid())
+  employeeId String
+  employee   Employee         @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  date       DateTime         @db.Date
+  clockIn    DateTime?
+  clockOut   DateTime?
+  status     AttendanceStatus @default(Present)
+  notes      String?
+  
+  createdAt  DateTime         @default(now())
+  updatedAt  DateTime         @updatedAt
+
+  @@unique([employeeId, date])
+  @@index([employeeId, date])
+  @@index([date])
+}
+
+model LeaveRequest {
+  id           String      @id @default(uuid())
+  employeeId   String
+  employee     Employee    @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  type         LeaveType
+  startDate    DateTime    @db.Date
+  endDate      DateTime    @db.Date
+  days         Int
+  reason       String
+  status       LeaveStatus @default(Pending)
+  reviewedBy   String?
+  reviewedAt   DateTime?
+  reviewNotes  String?
+  
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  @@index([employeeId])
+  @@index([status])
+  @@index([startDate, endDate])
+}
+
+model LeaveBalance {
+  id         String   @id @default(uuid())
+  employeeId String
+  employee   Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  type       String   // Annual, Sick, Casual, etc.
+  total      Int      // Total allocated
+  used       Int      @default(0)
+  pending    Int      @default(0)
+  
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([employeeId, type])
+  @@index([employeeId])
+}
+
+model PayrollRecord {
+  id              String        @id @default(uuid())
+  employeeId      String
+  employee        Employee      @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  month           Int           // 1-12
+  year            Int
+  basicSalary     Float
+  allowances      Float         @default(0)
+  deductions      Float         @default(0)
+  netSalary       Float
+  status          PayrollStatus @default(Pending)
+  paidDate        DateTime?
+  notes           String?
+  
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@unique([employeeId, month, year])
+  @@index([employeeId])
+  @@index([month, year])
+  @@index([status])
+}
+
+model Holiday {
+  id          String   @id @default(uuid())
+  name        String
+  date        DateTime @db.Date
+  description String?
+  isOptional  Boolean  @default(false)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([date])
+}
+
+model Notification {
+  id         String   @id @default(uuid())
+  employeeId String
+  employee   Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  title      String
+  message    String
+  type       String   // info, success, warning, error
+  isRead     Boolean  @default(false)
+  link       String?
+  
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([employeeId, isRead])
+  @@index([createdAt])
+}

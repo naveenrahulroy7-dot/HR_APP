@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { errorHandler, notFound } from './middleware/errorHandler.js';
 
 import authRoutes from './routes/authRoutes.js';
 import employeeRoutes from './routes/employeeRoutes.js';
@@ -36,10 +37,18 @@ app.use('/api/payroll', payrollRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/holidays', holidayRoutes);
 
-// FIX: Explicitly typed req and res to match express types, resolving handler signature errors.
+// Health check endpoint
 app.get('/api', (req: Request, res: Response) => {
-    res.json({ message: 'HRMS API is running...' });
+    res.json({ message: 'HRMS API is running...', status: 'ok' });
 });
+
+app.get('/api/health', (req: Request, res: Response) => {
+    res.json({ status: 'healthy', timestamp: new Date().toISOString() });
+});
+
+// Error handling middleware (must be last)
+app.use(notFound);
+app.use(errorHandler);
 
 const PORT = process.env.PORT || 3001;
 

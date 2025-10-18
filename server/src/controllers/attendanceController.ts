@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import asyncHandler from 'express-async-handler';
+import asyncHandler from '../utils/asyncHandler.js';
 import prisma from '../db.js';
 import { AttendanceStatus } from '@prisma/client';
 
@@ -7,7 +7,7 @@ import { AttendanceStatus } from '@prisma/client';
 // @route   GET /api/attendance
 // @access  Private
 export const getAllAttendance = asyncHandler(async (req: Request, res: Response) => {
-    const records = await prisma.attendanceRecord.findMany({
+    const records = await prisma.attendance.findMany({
         orderBy: {
             date: 'desc'
         }
@@ -19,7 +19,7 @@ export const getAllAttendance = asyncHandler(async (req: Request, res: Response)
 // @route   GET /api/attendance/my
 // @access  Private
 export const getMyAttendance = asyncHandler(async (req: any, res: Response) => {
-    const records = await prisma.attendanceRecord.findMany({
+    const records = await prisma.attendance.findMany({
         where: { employeeId: req.user.id },
         orderBy: { date: 'desc' },
     });
@@ -33,7 +33,7 @@ export const getMyTodayAttendance = asyncHandler(async (req: any, res: Response)
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     
-    const record = await prisma.attendanceRecord.findFirst({
+    const record = await prisma.attendance.findFirst({
         where: { 
             employeeId: req.user.id,
             date: today
@@ -49,7 +49,7 @@ export const clockIn = asyncHandler(async (req: any, res: Response) => {
     const today = new Date();
     today.setUTCHours(0, 0, 0, 0);
 
-    const existingRecord = await prisma.attendanceRecord.findFirst({
+    const existingRecord = await prisma.attendance.findFirst({
         where: { employeeId: req.user.id, date: today }
     });
 
@@ -58,7 +58,7 @@ export const clockIn = asyncHandler(async (req: any, res: Response) => {
         throw new Error('Already clocked in today');
     }
 
-    const newRecord = await prisma.attendanceRecord.upsert({
+    const newRecord = await prisma.attendance.upsert({
         where: {
              employeeId_date: {
                 employeeId: req.user.id,
@@ -87,7 +87,7 @@ export const clockOut = asyncHandler(async (req: any, res: Response) => {
     const today = new Date();
     today.setUTCHours(0, 0, 0, 0);
     
-    const record = await prisma.attendanceRecord.findFirst({
+    const record = await prisma.attendance.findFirst({
         where: { employeeId: req.user.id, date: today }
     });
 
@@ -102,13 +102,11 @@ export const clockOut = asyncHandler(async (req: any, res: Response) => {
     }
 
     const clockOutTime = new Date();
-    const workHoursInMinutes = Math.floor((clockOutTime.getTime() - record.clockIn.getTime()) / 60000);
 
-    const updatedRecord = await prisma.attendanceRecord.update({
+    const updatedRecord = await prisma.attendance.update({
         where: { id: record.id },
         data: {
             clockOut: clockOutTime,
-            workHours: workHoursInMinutes,
         }
     });
 
@@ -129,7 +127,7 @@ export const updateAttendanceStatus = asyncHandler(async (req: Request, res: Res
     const recordDate = new Date(date);
     recordDate.setUTCHours(0,0,0,0);
 
-    const updatedRecord = await prisma.attendanceRecord.upsert({
+    const updatedRecord = await prisma.attendance.upsert({
         where: {
             employeeId_date: {
                 employeeId,

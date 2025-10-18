@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import asyncHandler from 'express-async-handler';
+import asyncHandler from '../utils/asyncHandler.js';
 import prisma from '../db.js';
 
 // @desc    Get all departments
@@ -16,7 +16,7 @@ export const getDepartments = asyncHandler(async (req: Request, res: Response) =
 // @route   POST /api/departments
 // @access  Private (Admin/HR)
 export const createDepartment = asyncHandler(async (req: Request, res: Response) => {
-    const { name, managerId } = req.body;
+    const { name, description, headId } = req.body;
     if (!name) {
         res.status(400);
         throw new Error('Department name is required');
@@ -25,7 +25,8 @@ export const createDepartment = asyncHandler(async (req: Request, res: Response)
     const department = await prisma.department.create({
         data: {
             name,
-            managerId: managerId || null,
+            description,
+            headId: headId || null,
         }
     });
     res.status(201).json(department);
@@ -35,12 +36,13 @@ export const createDepartment = asyncHandler(async (req: Request, res: Response)
 // @route   PUT /api/departments/:id
 // @access  Private (Admin/HR)
 export const updateDepartment = asyncHandler(async (req: Request, res: Response) => {
-    const { name, managerId } = req.body;
+    const { name, description, headId } = req.body;
     const department = await prisma.department.update({
         where: { id: req.params.id },
         data: {
             name,
-            managerId: managerId || null,
+            description,
+            headId: headId || null,
         }
     });
     res.json(department);

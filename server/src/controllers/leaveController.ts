@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import asyncHandler from 'express-async-handler';
+import asyncHandler from '../utils/asyncHandler.js';
 import prisma from '../db.js';
 import { LeaveStatus, LeaveType } from '@prisma/client';
 
@@ -56,27 +56,24 @@ export const getMyLeaveBalances = asyncHandler(async (req: any, res: Response) =
 // @route   POST /api/leaves
 // @access  Private
 export const submitLeaveRequest = asyncHandler(async (req: any, res: Response) => {
-    const { leaveType, startDate, endDate, reason } = req.body;
+    const { type, startDate, endDate, reason } = req.body;
     const sDate = new Date(startDate);
     const eDate = new Date(endDate);
-    const days = (eDate.getTime() - sDate.getTime()) / (1000 * 3600 * 24) + 1;
+    const days = Math.floor((eDate.getTime() - sDate.getTime()) / (1000 * 3600 * 24)) + 1;
 
     const balance = await prisma.leaveBalance.findFirst({
-        where: { employeeId: req.user.id, type: leaveType }
+        where: { employeeId: req.user.id, type: type }
     });
 
-    if (leaveType !== LeaveType.Unpaid && (!balance || (balance.total - balance.used - balance.pending) < days)) {
+    if (type !== LeaveType.Unpaid && (!balance || (balance.total - balance.used - balance.pending) < days)) {
         res.status(400);
         throw new Error('Insufficient leave balance');
     }
 
-    const employee = await prisma.employee.findUnique({ where: { id: req.user.id }});
-
     const leaveRequest = await prisma.leaveRequest.create({
         data: {
             employeeId: req.user.id,
-            employeeName: employee!.name,
-            leaveType,
+            type,
             startDate: sDate,
             endDate: eDate,
             reason,
@@ -86,10 +83,10 @@ export const submitLeaveRequest = asyncHandler(async (req: any, res: Response) =
     });
 
     // Update pending balance
-    if (leaveType !== LeaveType.Unpaid) {
+    if (type !== LeaveType.Unpaid && balance) {
         await prisma.leaveBalance.update({
-            where: { id: balance!.id },
-            data: { pending: balance!.pending + days }
+            where: { id: balance.id },
+            data: { pending: balance.pending + days }
         });
     }
 
@@ -115,7 +112,7 @@ export const actionLeaveRequest = asyncHandler(async (req: Request, res: Respons
     });
 
     const balance = await prisma.leaveBalance.findFirst({
-        where: { employeeId: request.employeeId, type: request.leaveType }
+        where: { employeeId: request.employeeId, type: request.type }
     });
     
     if (balance) {
