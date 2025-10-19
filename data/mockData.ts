@@ -1,5 +1,5 @@
 
-import { Employee, UserRole, EmployeeStatus, EmployeeType, Department, AttendanceRecord, AttendanceStatus, LeaveRequest, LeaveType, LeaveStatus, LeaveBalance, LeaveBalanceItem, PayrollRecord, PayrollStatus, Holiday, Notification, Task, TaskStatus, TaskPriority } from '../types.ts';
+import { Employee, UserRole, EmployeeStatus, EmployeeType, Department, AttendanceRecord, AttendanceStatus, LeaveRequest, LeaveType, LeaveStatus, LeaveBalance, LeaveBalanceItem, PayrollRecord, PayrollStatus, Holiday, AppNotification, Task, TaskStatus, TaskPriority } from '../types.ts';
 import { generateAvatar } from '../utils/avatar.ts';
 
 // Add a password field to the mock objects for authentication simulation
@@ -48,6 +48,6 @@ export const mockPayroll: PayrollRecord[] = [];
 
 export const upcomingHolidays: Holiday[] = [];
 
-export const mockNotifications: Notification[] = [];
+export const mockNotifications: AppNotification[] = [];
 
 export const mockTasks: Task[] = [];

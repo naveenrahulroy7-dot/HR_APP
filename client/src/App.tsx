@@ -1,25 +1,25 @@
 import React, { useState, useCallback, useEffect, useMemo } from 'react';
-import Sidebar from './components/layout/Sidebar';
-import Topbar from './components/layout/Topbar';
-import LoginPage from './components/LoginPage';
-import { Employee, Notification, Department, AttendanceRecord, LeaveRequest, PayrollRecord, LeaveBalance, LeaveStatus, UserRole, Holiday, LeaveType } from './types';
-import { ToastProvider, useToast } from './hooks/useToast';
-import * as api from './services/api';
-import { handleApiError } from './utils/errorHandler';
+import Sidebar from '../../components/layout/Sidebar';
+import Topbar from '../../components/layout/Topbar';
+import LoginPage from '../../components/LoginPage';
+import { Employee, Department, AttendanceRecord, LeaveRequest, PayrollRecord, LeaveBalance, LeaveStatus, UserRole, Holiday, AppNotification } from '../../types';
+import { ToastProvider, useToast } from '../../hooks/useToast';
+import * as api from '../../services/api';
+import { handleApiError } from '../../utils/errorHandler';
 
 // Page Components
-import DashboardPage from './components/pages/DashboardPage';
-import EmployeesPage from './components/pages/EmployeesPage';
-import DepartmentsPage from './components/pages/DepartmentsPage';
-import AttendancePage from './components/pages/AttendancePage';
-import LeavePage from './components/pages/LeavePage';
-import LeaveManagementPage from './components/pages/LeaveManagementPage';
-import PayrollPage from './components/pages/PayrollPage';
-import ReportsPage from './components/pages/ReportsPage';
-import ProfilePage from './components/pages/ProfilePage';
-import MFASetupPage from './components/mfa/MFASetupPage';
-import MFAVerificationPage from './components/mfa/MFAVerificationPage';
-import Icon from './components/common/Icon';
+import DashboardPage from '../../components/pages/DashboardPage';
+import EmployeesPage from '../../components/pages/EmployeesPage';
+import DepartmentsPage from '../../components/pages/DepartmentsPage';
+import AttendancePage from '../../components/pages/AttendancePage';
+import LeavePage from '../../components/pages/LeavePage';
+import LeaveManagementPage from '../../components/pages/LeaveManagementPage';
+import PayrollPage from '../../components/pages/PayrollPage';
+import ReportsPage from '../../components/pages/ReportsPage';
+import ProfilePage from '../../components/pages/ProfilePage';
+import MFASetupPage from '../../components/mfa/MFASetupPage';
+import MFAVerificationPage from '../../components/mfa/MFAVerificationPage';
+import Icon from '../../components/common/Icon';
 
 // More granular auth states for mandatory MFA flow
 type AuthState = 'loading' | 'loggedOut' | 'needsMfaSetup' | 'needsMfaVerification' | 'authenticated';
@@ -40,7 +40,7 @@ const AppContent: React.FC = () => {
   const [payrollRecords, setPayrollRecords] = useState<PayrollRecord[]>([]);
   const [leaveBalances, setLeaveBalances] = useState<LeaveBalance[]>([]);
   const [holidays, setHolidays] = useState<Holiday[]>([]);
-  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [notifications, setNotifications] = useState<AppNotification[]>([]);
 
   const handleLogout = useCallback(() => {
     localStorage.removeItem('authToken');
@@ -100,9 +100,9 @@ const AppContent: React.FC = () => {
 
             if (user.role === UserRole.Employee) {
                 promises.push(api.getEmployees()); // Fetch all for dept dropdowns etc.
-                promises.push(api.getMyAttendance());
-                promises.push(api.getMyLeaveRequests());
-                promises.push(api.getMyPayroll());
+                promises.push(api.getAttendance().then(res => ({ data: res.data.filter(ar => ar.employeeId === user.id) })));
+                promises.push(api.getAllLeaveRequests().then(res => ({ data: res.data.filter(lr => lr.employeeId === user.id) })));
+                promises.push(api.getPayroll().then(res => ({ data: res.data.filter(pr => pr.employeeId === user.id) })));
                 promises.push(api.getMyLeaveBalances().then(res => ({ data: res.data ? [res.data] : [] }))); // Wrap in array
             } else { // Admin, HR, Manager
                 promises.push(api.getEmployees());
@@ -137,8 +137,7 @@ const AppContent: React.FC = () => {
     if (authState === 'loading') { // Initial load state
         authenticateAndLoad();
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [authState]); // This hook now depends on authState
+  }, [authState, addToast]); // This hook now depends on authState
 
 
   const handleLoginSuccess = useCallback(async (user: Employee, token: string) => {
@@ -214,10 +213,10 @@ const AppContent: React.FC = () => {
     }
   }, [addToast, attendanceRecords]);
   
-  const addNotification = useCallback((notification: Omit<Notification, 'id'|'timestamp'|'read'>) => {
+  const addNotification = useCallback((notification: Omit<AppNotification, 'id'|'timestamp'|'read'>) => {
       // In a real app this would likely be a push from the server,
       // but for now we simulate it on the client after an action.
-      const newNotif: Notification = {
+      const newNotif: AppNotification = {
           ...notification,
           id: `notif-${Date.now()}`,
           timestamp: new Date().toISOString(),
@@ -248,8 +247,6 @@ const AppContent: React.FC = () => {
     
     const userLeaveBalances = leaveBalances.find(lb => lb.employeeId === currentUser.id)?.balances || [];
     const userLeaveRequests = leaveRequests.filter(lr => lr.employeeId === currentUser.id);
-    const userPayrollRecords = payrollRecords.filter(pr => pr.employeeId === currentUser.id);
-    const userAttendanceRecords = attendanceRecords.filter(ar => ar.employeeId === currentUser.id);
 
     switch (activePage) {
       case 'Dashboard':

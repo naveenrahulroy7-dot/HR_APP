@@ -5,7 +5,7 @@ import { AttendanceRecord } from '../../types';
 
 interface LiveWorkTimerProps {
   record: AttendanceRecord;
-  onClockAction: (action: 'in' | 'out') => void;
+  onClockAction: (_action: 'in' | 'out') => void;
   weeklyAccumulatedMs: number;
 }
 

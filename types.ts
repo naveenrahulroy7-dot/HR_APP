@@ -131,7 +131,7 @@ export interface Holiday {
   name: string;
 }
 
-export interface Notification {
+export interface AppNotification {
     id: string;
     title: string;
     message: string;

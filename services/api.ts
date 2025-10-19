@@ -1,4 +1,4 @@
-import { Employee, LeaveRequest, PayrollRecord, Department, AttendanceRecord, LeaveBalance, Holiday, Notification, LeaveStatus, EmployeeStatus, PayrollStatus, UserRole, AttendanceStatus, Task } from '../types.ts';
+import { Employee, LeaveRequest, PayrollRecord, Department, AttendanceRecord, LeaveBalance, Holiday, LeaveStatus, EmployeeStatus, PayrollStatus, UserRole, AttendanceStatus, Task } from '../types.ts';
 import * as mock from '../data/mockData.ts';
 import { generateAvatar } from '../utils/avatar.ts';
 

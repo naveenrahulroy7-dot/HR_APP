@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import { AttendanceRecord, AttendanceStatus, Employee, UserRole, Department } from '../../types.ts';
 import Card from '../common/Card.tsx';
 import Input from '../common/Input.tsx';
