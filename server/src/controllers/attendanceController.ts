@@ -3,6 +3,24 @@ import asyncHandler from 'express-async-handler';
 import prisma from '../db.js';
 import { AttendanceStatus } from '@prisma/client';
 
+// Map UI-friendly strings to enum
+const normalizeStatus = (status: string): AttendanceStatus => {
+  switch (status) {
+    case 'Present':
+      return AttendanceStatus.Present;
+    case 'Absent':
+      return AttendanceStatus.Absent;
+    case 'Leave':
+      return AttendanceStatus.Leave;
+    case 'Half-Day':
+      return AttendanceStatus.HalfDay;
+    case 'Not Marked':
+      return AttendanceStatus.NotMarked;
+    default:
+      return AttendanceStatus.NotMarked;
+  }
+};
+
 // @desc    Get all attendance records (Admin/HR/Manager)
 // @route   GET /api/attendance
 // @access  Private
@@ -136,11 +154,11 @@ export const updateAttendanceStatus = asyncHandler(async (req: Request, res: Res
                 date: recordDate,
             }
         },
-        update: { status: status as AttendanceStatus },
+        update: { status: normalizeStatus(status) },
         create: {
             employeeId,
             date: recordDate,
-            status: status as AttendanceStatus
+            status: normalizeStatus(status)
         }
     });
 
